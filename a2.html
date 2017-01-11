@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="generator" content="HTML Tidy for HTML5 (experimental) for Mac OS X https://github.com/w3c/tidy-html5/tree/c63cc39">
+        <meta charset="utf-8">
+        <title>
+            CSCA08: Assignment 2
+        </title>
+        <style type="text/css">
+table {
+        border-collapse:collapse;
+        font-family: monospace;
+        }
+        td
+        {
+        border: 1px solid black;
+        }
+        th, td {
+        padding:5px;
+        }
+        table tbody tr:nth-child(odd) {
+        background-color: #white;
+        }
+        table tbody tr:nth-child(even) {
+        background-color: #efefef;
+        }
+        caption {
+        font-weight: bold;
+        font-size: 1.2em;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="title">
+            <h1>
+                Assignment 2: Files, Dictionaries and Objects
+            </h1>
+        </div>
+        <div class="content">
+            <p>
+                <b>Due</b>: Electronically, by 5:00 PM on December 2, 2015
+            </p>
+            <h2>
+                Introduction
+            </h2>
+            <p>
+                We've covered many important Python concepts by this point, including lists, files, dictionaries and (basic) OOP. In this assignment, we apply most of these concepts to write a program that can combine and transform tables of data in order to answer questions about that data. The program you will write is called SQuEaL. It stands for <b>S</b>implified <b>Qu</b>ery <b>E</b>ngine <b>a</b>nd <b>L</b>anguage, but more importantly it's the noise that Dan Zingaro (at UTM) made when he came up with what he thinks is a super-cool idea for this assignment. We'll see!
+            </p>
+            <h2>
+                Querying Data
+            </h2>
+            <p>
+                The quantity and variety of data generated today requires that we have ways to organize that data and extract pieces of data that are currently of interest. For example, you might have thousands of emails in your inbox right now, but you have ways of searching and filtering that data to find messages from certain people, with specific keywords, or sent on specific dates.
+            </p>
+            <p>
+                Nowhere is the importance of data more evident in our daily lives than when we interact with online retailers. Consider the typical interaction with a website like Amazon. Perhaps you're looking for a new CS book to read over the holidays. You might search for <em>Computer Science</em> in the search box. Among the millions of products available, Amazon returns only those products of relevance in the search results.
+            </p>
+            <p>
+                When you purchase a book, you are required to create a customer account. Amazon stores your account information along with this order and all orders you make in the future. Later, you can check on your order history to see exactly what you've purchased. Of course, millions of other customers have purchased stuff too, so Amazon has to maintain all of this data and make sure that you see only your data and another person sees only theirs. Amazon will also want to use this data for internal purposes to see how much they've sold, what products are most popular, what kinds of ads to serve to you, etc. Data is used to answer a wide variety of questions such as these:
+            </p>
+            <ul>
+                <li>What are the Computer Science books available right now?
+                </li>
+                <li>Does the current user have a customer account?
+                </li>
+                <li>What is the order history for the current customer?
+                </li>
+                <li>How many products did Amazon sell this year?
+                </li>
+                <li>What are the top ten most popular books this year?
+                </li>
+            </ul>
+            <p>
+                Websites like Amazon use databases to store these vast amounts of data. They then make <em>queries</em> on that data in order to retrieve data for a variety of purposes. One sample query might be: "give me all of the Computer Science books"; another might be: "give me this customer's order history, from oldest order to most recent order". There are languages used to make such queries on databases. The most popular of these languages is SQL (Structured Query Language), and if you take CSCC43 you'll learn a lot more SQL.
+            </p>
+            <p>
+                In this assignment, you'll write a program that understands a SQL-like language for making queries of data. Don't worry: we won't mention SQL again in this handout, and we expect no outside knowledge of databases or SQL (OOPS!) or Amazon or anything like that. Everything is in this handout. <strong>Warning: if you know some SQL, you should be extra careful to do what we are asking and not make assumptions based on what you might have learned elsewhere.</strong>
+            </p>
+            <h2>
+                Tables and Databases
+            </h2>
+            <p>
+                The first two important terms for us are <em>table</em> and <em>database</em>. From now on, when we use these terms, they mean what is described in this section.
+            </p>
+            <p>
+                Below is a sample table that we will call <code>movies</code>. It contains information on movies; try to understand what the table is showing before continuing to the text below.
+            </p>
+            <table>
+<caption>movies</caption>
+<tr>
+<th>m.year</th><th>m.title</th><th>m.studio</th><th>m.gross</th>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td><td>Par.</td><td>2186.8</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td><td>BV</td><td>1063.2</td>
+</tr>
+</table>
+
+            <p>
+                The table starts with a header giving the names of each column. The column names are <code>m.year</code>, <code>m.title</code> <code>m.studio</code>, and <code>m.gross</code>. (Ignore the <code>m.</code> prefix for now; you'll see why it's there soon.) Note that the header isn't one of the data rows. The data rows are the four rows below the header. The table has four columns, and each row gives a value in each column. For example, we see that the first movie is Titanic, the year it was made was 1997, the studio that produced it was Par. (short for Paramount), and the gross revenue (amount the movies made) for the movie was 2186.8. (Yes, that's given in millions of dollars... anyone who hasn't dropped CS to enroll in film school, please continue reading.)
+            </p>
+            <p>
+                So that's a <em>table</em>: a grid where each column has a column name and each row gives a value for each column. Each row corresponds to a single thing/object/entity; in this example, each row corresponds to a movie.
+            </p>
+            <p>
+                A <em>database</em> is a collection of one or more tables. A database might consist of only one table, such as <code>movies</code>. But we can expand our database to include more tables. For example, we can add a second table, <code>oscars</code>, so that we have two tables in our database:
+            </p>
+          <table>
+<caption>oscars</caption>
+<tr>
+<th>o.year</th><th>o.category</th><th>o.title</th>
+</tr>
+<tr>
+<td>2010</td><td>Animated Feature Film</td><td>Toy Story 3</td>
+</tr>
+<tr>
+<td>2003</td><td>Directing</td><td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>1997</td><td>Directing</td><td>Titanic</td>
+</tr>
+<tr>
+<td>1997</td><td>Best Picture</td><td>Titanic</td>
+</tr>
+</table>
+
+            <p>
+                This table gives names of movies that won Academy Awards (also knows as "The Oscars", the year they won, and the category in which they won. Notice that the names are the same ones as in the <code>movies</code> table above. This is no coincidence. Stay tuned.
+            </p>
+            <p>
+                The two tables <code>movies</code> and <code>oscars</code> is another example of a database; this database has two tables.
+            </p>
+            <h2>
+                SQuEaL: Operations on Tables
+            </h2>
+            <p>
+                In this section, you'll learn the operations that can be performed on tables and how these operations are written in SQuEaL. Throughout, keep one thing in mind: each operation on a table creates a new table.
+            </p>
+            <h3>
+                Selecting Columns
+            </h3>
+            <p>
+                One thing we can do on a table is select some or all of its columns. For example, consider the <code>movies</code> table (the first table given in this handout). We might be interested in only the names of the movies, so we might want a table with only the <code>m.title</code> column. We could express this in SQuEaL as:<br>
+                <code>select m.title from movies</code><br>
+                and this would give us a table with just one column:
+            </p>
+ <table>
+<caption>one column from movies</caption>
+<tr>
+<th>m.title</th>
+</tr>
+<tr>
+<td>Titanic</td>
+</tr>
+<tr>
+<td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>Toy Story 3</td>
+</tr>
+</table>
+            <p>
+                Or maybe you want only the movie names and year (and not the studio or gross revenue). You'd express this as:<br>
+                <code>select m.title,m.year from movies</code><br>
+                and you'd get a table with two columns, <code>m.title</code> and <code>m.year</code>:
+            </p>
+            <table>
+<caption>two columns from movies</caption>
+<tr>
+<th>m.year</th><th>m.title</th>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td>
+</tr>
+</table>
+
+            <p>
+                You may have noticed that the columns in this table are in the "wrong" order. However, that doesn't matter. The order of the columns does not change the data in the table. You will see in the next section that we will use dictionaries to store columns, so the order of columns is not preserved. This is expected behaviour.
+            </p>
+            <p>
+                Moving on: there are two ways to get all of the columns. You could list them all separated by commas:<br>
+                <code>select m.title,m.studio,m.gross,m.year from movies</code><br>
+                or you can use a shorthand; the <code>*</code> means "all columns":<br>
+                <code>select * from movies</code><br>
+                In both cases, you get a new table that contains exactly the same information as <code>movies</code>.
+            </p>
+            <h3>
+                Multiple Tables
+            </h3>
+            <p>
+                Selecting columns from a table is nice, but it doesn't let us use the full capacity of our data stored in the database. Recall that a database can have multiple tables, and that these tables might be meaningfully related. For example, our <code>movies</code> table contains the name of the movie, but the <code>oscars</code> table contains additional information on awards that movie won (we'll give you the data to make more related tables, such as ratings and actors who starred in the various movies).
+            </p>
+            <p>
+                Look back at those two tables. It would be nice to be able to create a single table that joins those two tables into one, like this: 
+            </p>
+<table>
+<caption>movies join oscars</caption>
+<tr>
+<th>m.title</th><th>m.studio</th><th>m.gross</th><th>o.category</th>
+</tr>
+<tr>
+<td>Titanic</td><td>Par.</td><td>2186.8</td><td>Directing</td>
+</tr>
+<tr>
+<td>Titanic</td><td>Par.</td><td>2186.8</td><td>Best Picture</td>
+</tr>
+<tr>
+<td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td><td>Directing</td>
+</tr>
+<tr>
+<td>Toy Story 3</td><td>BV</td><td>1063.2</td><td>Animated Feature Film</td>
+</tr>
+</table>
+
+          <p>
+                Notice that, for each row, we have some of the data from the <code>movies</code> and some of the data from oscars (<code>o.category</code>).
+            </p>
+            <p>
+                You should be able to perform these <em>joins</em> by hand. The column on which we are joining the two tables is the column that contains the common information. In this case, both tables have a <code>title</code> column, so we join on that. Consider the first row of <code>movies</code>. The title of the film is Titanic, so we're going to join with all rows of the <code>oscars</code> table where the <code>o.title</code> is Titanic. In this case, there are two rows where <code>o.title</code> is Titanic, the 3rd and 4th (best picture and directing for 1997). Joining the first row from <code>movies</code> and that third row from <code>oscars</code> gives us the first row for our new table: <!--Kondo row-->
+            </p>
+     <table>
+<caption>movies join oscars</caption>
+<tr>
+<th>m.title</th><th>m.studio</th><th>m.gross</th><th>o.category</th>
+</tr>
+<tr>
+<td>Titanic</td><td>Par.</td><td>2186.8</td><td>Directing</td>
+</tr>
+
+</table>
+            <p>
+                The first row of <code>movies</code> would also join with the 4th row of <code>oscars</code>, to produce the 2nd row of our new table. Likewise, the 2nd and 3rd rows of <code>movies</code> would join with the 2nd and 1st rows of <code>oscars</code> respectively, to produce our final table. 
+            </p>
+            <p>
+                Here is the SQuEaL syntax for performing the join described here:<br>
+                <code>select m.title,m.studio,m.gross,o.category from movies,oscars where m.title=o.title</code><br>
+                You should notice two things. First, after <code>from</code>, we now have the names of <em>two</em> tables. In addition, we have added the keyword <code>where</code> followed by a condition that must be true in order for a row to appear in the table. <code>m.title=o.title</code> means that a row from the movie table can be joined to a row of the oscar table exactly when the title columns are equal. (This is why we have the <code>m.</code> and <code>o.</code> prefixes. We can't have two columns with the same name or we wouldn't have a way to refer uniquely to them!)
+            </p>
+            <p>
+                STOP! Make sure you understand this join stuff before continuing. Be sure you can work through questions like the following, or you'll have conceptual trouble later:
+            </p>
+            <ul>
+                <li>What if there were an oscar winner from the <code>oscar</code> table that didn't have a row in the <code>movies</code> table? Would that winner show up in the new table?
+                </li>
+                <li>What if there were a movie in the <code>movies</code> table that didn't win any awards in the <code>oscars</code> table? Would that movie show up in the new table?
+                </li>
+            </ul>
+            <pre>
+s
+p
+o
+i
+l
+e
+r
+</pre>
+            <p>
+                The answer to both questions is <i>no</i>. For example, in the second case, we'd be looking at a movie in the <code>movies</code> table and trying to connect that row with a row in the <code>oscars</code> table. But since that movie's title isn't in <code>oscars</code>, we find no match, and hence can't add a row to the join table. (believe it or not, making money doesn't mean that a movie is any good -insert your own Twilight/Michael Bay joke here-). 
+            </p>
+            <h2>
+                Your Tasks
+            </h2>
+            <p>
+                Your task for this assignment is in three parts. In the first part, you will create objects and methods to allow you to work with tables and dictionaries, then you will write functions to read a database (one or more tables), finally you will write a program that accepts SQuEaL queries from the keyboard, runs them on a database, and outputs the results.
+            </p>
+            <h2>
+                Starter Code
+            </h2>
+            <p>
+                Please download the <a href="a2_starter.zip">Assignment 2 Starter Files</a> and extract the zip archive. The archive contains starter Python code files and some sample tables that constitute databases (see below).
+            </p>
+            <h3>
+            	Part 1: Building Table and Database Objects
+            </h3>
+            <p>
+            First, you will write the code to complete the <code>Table</code> and 
+            <code>Database</code> classes in <code>database.py</code>. You will have to decide how to implement these classes, including what instance variables and methods they should have. The two methods that we will insist upon both classes having is <code>get_dict</code>, and <code>set_dict</code>, whose DocStrings have already been provided, and deal with dictionary representation of tables. These methods will allow us
+to more easily test your code. You should NOT be using these in your own code.
+            </p>
+            <p>
+            A table, is represented as a dictionary where each key is the name of a column and each value is the list of items in that column from the top row to the bottom. For example, the movies dictionary would contain four key/value pairs. Here is one of them: the key is <code>'m.year'</code> and the value is <code>['1997','2003','2010']</code>, another would have the key <code>'m.title'</code> mapped to the value <code>['Titanic','The Lord of the Rings: The Return of the King','Toy Story 3']</code>.
+            </p>
+            <p>
+                A database can be represented as a dictionary where the keys are table names and the values are table objects.
+            </p>
+            <p>
+            Before you spend time building the methods for <code>Table</code> and <code>Database</code>, we suggest that you read the rest of the handout so you better understand what you'll have to do with these classes. Building sensible and well thought-out methods will make your life much easier when completing the next part of the assignment.
+            </p>
+            </p>
+            <h3>
+                Part 2: Reading Tables and Databases
+            </h3>
+            <p>
+                Next, you will write some reading-related functions in <code>reading.py</code>.
+            </p>
+                Write the following functions in <code>reading.py</code>:
+            </p>
+            <ul>
+                <li>
+                    <code>read_table: (str) -&gt; Table</code><br>
+                    <p>
+                        The parameter is the name of a table file (note: this time, it's the name of the file, and not the file handle). A table file is a comma-separated file such as <code>movies.csv</code>. (Do not open <code>csv</code> files in Excel or some other spreadsheet program. They are text files. Open them in a text editor -OTHER THAN NOTEPAD- to see them.) It is your task to understand the structure of this type of file in order to read it properly. The function returns a Table object.
+                    </p>
+                </li>
+                <li>
+                    <code>read_database: () -&gt; Database</code><br>
+                    <p>
+                        The database on which this function operates consists of <b>all</b> of the table files in the current directory. These files all have an extension of <code>.csv</code>. This function reads each file and returns a Database object representing all of . For a file named <code>x.csv</code>, the name of the table is <code>x</code>; that is, the <code>.csv</code> is not part of the table name. Note that each column name in the database is guaranteed to be unique. That is, if there is a column called <code>x</code> in one table, then there is guaranteed not to be column <code>x</code> in another table. (This is why we use the <code>m.</code>-style prefixes on column names: so that our column names are not shared by multiple tables in the database.)
+                    </p>
+                    <p>
+                        How are you to obtain a list of all of the <code>.csv</code> files in the directory? Use <code>glob.glob('*.csv')</code> to obtain a list of these filenames. We have included this bit of code to demonstrate this for you, so you are just provided with a list of the names of the files thats you need to process.
+                    </p>
+                    <p>
+                        Note that there should be no <code>input</code> and no <code>print</code> in <code>reading.py</code>. Two functions and that's all. If you run <code>reading.py</code> and it prints something or requests user input, something is wrong.
+                    </p>
+                </li>
+            </ul>
+            <h3>
+                Part 3: Running Queries
+            </h3>
+            <p>
+                In <code>squeal.py</code>, you will write a program that:
+            </p>
+            <ol>
+                <li>Reads the database in the current directory.
+                </li>
+                <li>Reads SQuEaL queries from the keyboard until a blank line is entered. Each query is guaranteed to be of the proper syntax. You <strong>do not</strong> need to try to verify that the query has the correct syntax; it is guaranteed to be a well-formed query, and it is fine if your program crashes on malformed queries. After running the query, continue with the next input prompt.
+                </li>
+            </ol>
+            <h2 id="syntax">
+                SQuEaL Syntax
+            </h2>
+            <p>
+                Here is the syntax of valid SQuEaL queries. When we speak of a <em>token</em>, we mean a piece of the query that you get by calling <code>split</code> on the query. In order, the query contains:
+            </p>
+            <ul>
+                <li>The token <code>select</code>. This token is required.
+                </li>
+                <li>A comma-separated list of one or more column names. There are no spaces in this list, there are no duplicate column names in this list, and all columns are guaranteed to exist in the table. The special token <code>*</code> (instead of a comma-separated list of column names) means "all columns".
+                </li>
+                <li>The token <code>from</code>. This token is required.
+                </li>
+                <li>A comma-separated list of one or more table names. There are no spaces in this list, there are no duplicate table names in this list, and all tables are guaranteed to exist in the database.
+                </li>
+                <li>The token <code>where</code>. This token is <strong>optional</strong>. If not present, then the query is finished here and no more tokens will be present. If the token <code>where</code> is present, then it is followed by a <code>where</code> clause that looks like this:
+                    <ul>
+                        <li>A comma-separated list of one or more constraints. There are no spaces in this list, and each column mentioned in the constraints is guaranteed to exist. Each constraint is of one of the following four forms: <code>column_name1=column_name2</code>, <code>column_name1&gt;column_name2</code>, <code>column_name1='value'</code>, or <code>column_name1&gt;'value'</code>  (you can also implement &lt; if you wish, but we won't be testing it). Single quotes are used to indicate that the second operand is a hard-coded value rather than the value of another column in the row. Notice that there are no spaces around the operators. Only these two operators are allowed. Also, note that only <code>column_name1='value'</code> and <code>column_name1&gt;'value'</code> are valid, <code>'value'=column_name</code> and <code>'value'&gt;column_name</code> are not valid constraints (i.e., the value can only come <b>after</b> the operator)
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <h3>
+                A Required Function: <code>run_query</code>
+            </h3>
+            <p>
+            We're not specifying much in terms of required functions in <code>squeal.py</code>. It is your responsibility to break the work into meaningful, self-contained functions that perform well-defined and small tasks, and we will be marking your design. That said, we are requiring that you write two particular functions. The first of which is:<br> <code>run_query: (Database, str) -&gt; Table</code>
+            </p>
+            <p>This function takes a Database object, and a query (in the form of a string) as its parameters. Runs the given query on the given database, and returns a table representing the resulting table. 
+            </p>
+            <h3>
+                Another Required Function: <code>cartesian_product</code>
+            </h3>
+            <p>
+                  The second function you must write is this:<br>
+                <code>cartesian_product: (Table, Table) -&gt; Table</code>
+            </p>
+            <p>
+                The <b>Cartesian product</b> of two tables is a new table where each row in the first table is paired with every row in the second table. For example, the Cartesian product of the <code>movies</code> and <code>oscars</code> tables is the following.
+            </p>
+            <table style="border:1;cellpadding:2;cellspacing:0">
+            <caption>cartesian product</caption>
+<tr>
+<th>m.year</th><th>m.title</th><th>m.studio</th><th>m.gross</th><th>o.year</th><th>o.category</th><th>o.title</th>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td><td>Par.</td><td>2186.8</td><td>2010</td><td>Animated Feature Film</td><td>Toy Story 3</td>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td><td>Par.</td><td>2186.8</td><td>2003</td><td>Directing</td><td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td><td>Par.</td><td>2186.8</td><td>1997</td><td>Directing</td><td>Titanic</td>
+</tr>
+<tr>
+<td>1997</td><td>Titanic</td><td>Par.</td><td>2186.8</td><td>1997</td><td>Best Picture</td><td>Titanic</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td><td>2010</td><td>Animated Feature Film</td><td>Toy Story 3</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td><td>2003</td><td>Directing</td><td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td><td>1997</td><td>Directing</td><td>Titanic</td>
+</tr>
+<tr>
+<td>2003</td><td>The Lord of the Rings: The Return of the King</td><td>NL</td><td>1119.9</td><td>1997</td><td>Best Picture</td><td>Titanic</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td><td>BV</td><td>1063.2</td><td>2010</td><td>Animated Feature Film</td><td>Toy Story 3</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td><td>BV</td><td>1063.2</td><td>2003</td><td>Directing</td><td>The Lord of the Rings: The Return of the King</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td><td>BV</td><td>1063.2</td><td>1997</td><td>Directing</td><td>Titanic</td>
+</tr>
+<tr>
+<td>2010</td><td>Toy Story 3</td><td>BV</td><td>1063.2</td><td>1997</td><td>Best Picture</td><td>Titanic</td>
+</tr>
+</table>
+            <p>
+                Note that there are three rows in <code>movies</code> and four rows in <code>oscars</code>, so we get 3*4 = 12 rows in the cartesian product table. Of course, most of these 12 rows are probably not what you want, as the titles don't match. The way that these nonsense rows get removed is through a suitable <code>where</code> clause that constrains which rows are kept. For example, with a <code>where</code> clause of <code>m.title=o.title</code>, you end up with only four rows, as expected.
+            </p>
+            <p>
+                Although it isn't very efficient (and certainly isn't the way things are implemented in a real database system), you <b>must</b> process the SQuEaL query by first using your <code>cartesian_product</code> function to join all the tables in the query into a huge table and then keep the "good" rows and columns for the query based on the <code>where</code> and <code>select</code> clauses.
+            </p>
+            <p>
+                You may have noticed in reading the <a href="#syntax">SQuEaL Syntax</a> that one or more tables are allowed in the <code>from</code> part of the query. That is, you must support queries that contain one or two or three or more tables. Don't overcomplicate this. First produce the Cartesian product on the first two tables; that gives you a new table. Then, do the Cartesian product on that new table and the third table in the list of tables; that gives you a new table again, and so on. You can use <code>imdb.csv</code> or <code>oscar-actors.csv</code> in your starter files if you want to try a query that involves three tables.
+            </p>
+            <h3>
+                What to do with a Query
+            </h3>
+            <p>
+                So, a user runs <code>squeal.py</code> and types a query, like <code>select * from movies</code> or whatever. What does your program have to do to process this query?
+            </p>
+            <p>
+                The first thing you want to do is break the query into tokens by calling <code>split</code>. Remember: the query is guaranteed to have proper syntax!
+            </p>
+            <p>
+                Now, start with the first table after the <code>from</code>; call that your base table. If there is a second table in the tables list, compute the Cartesian product of the base table and that second table; that results in another table (call it <code>t2</code>). If there is a third table in the tables list, compute the Cartesian product of <code>t2</code> and that third table. Keep doing this until you've finished with all of the tables. When you're done, you have a table containing all of the columns from all of the tables that are involved in the query.
+            </p>
+            <p>
+                Now, apply any constraints in the <code>where</code> clause. Each constraint from left to right results in a new table that keeps only the rows that satisfy the constraint. Processing the first constraint removes 0 or more rows; processing the second constraint takes the result of the first constraint and removes a further 0 or more rows, and so on. We see many opportunities for helper functions here: processing one constraint, processing all constraints, finding operators, handling values vs. column names, etc.
+            </p>
+            <p>
+                Finally, create a new table where you keep only those columns that were listed after the <code>select</code>. (Another opportunity for good design with a helper function!) The resulting table is the result of the query. Be careful: even though <code>select</code> is listed first in the query (it is the first token), it is the last thing you do in processing the query!
+            </p>
+            <p>
+                Once you've generated the table for the query, you want to output that table to the screen with commas separating columns. We have provided a helper function in your starter code that outputs a table in the proper format.
+            </p>
+            <h3>
+                When are Tables Equivalent?
+            </h3>
+            <p>
+                If two tables have the same rows and the same column names, but the column order is different, then the tables are equivalent.
+            </p>
+            <p>
+                Similarly, if two tables have the same rows and the same column names, but the order of the rows is different, then the tables are equivalent.
+            </p>
+            <p>
+                So, you can take a table, change the order of the columns, change the order of the rows, and it will still be the same table. What does this mean? It means that the order in which you add rows during a Cartesian product operation doesn't matter. As long as you have the correct rows in your table, it is fine.
+            </p>
+            <h2>
+                Testing your Code
+            </h2>
+            <p>
+                It is recommended that you test each function as you write it by creating small files, tables, or queries, depending on the function. This is preferable to doing lots of work, finding a bug, and then having no idea where in the code that bug was introduced.
+            </p>
+            <p>
+                We are not asking you to submit your testing code as part of your submission.
+            </p>
+            <p>
+                To help you test, we are also providing a type-checker. It is in your starter code (<code>typechecker.py</code>). This module simply tests that the required functions accept the proper number of parameters and return the proper type. Passing the type-checker says nothing of the correctness of your functions, and does not test any helper functions that you have written. (We haven't prescribed how you should write those, so we can't test their type contracts!)
+            </p>
+            <h2>
+                More Examples
+            </h2>
+            <p>
+                Looking for more databases on which to run your code? We've provided a bunch of sample <code>.csv</code> files</a>. We've added much more detailed movie info, an olympic database, as well as a database of every type of food that was mentioned in the tv show Seinfeld (some databases are more practical than others). We may add new files to play with as we go, so check back periodically. If you come across some fun .csv files, feel free to let me know.
+            </p>
+            <h2>
+                Marking
+            </h2>
+            <p>
+                These are the aspects of your work that will be marked for Assignment 2:
+            </p>
+            <ul>
+                <li>
+                    <b>Correctness:</b> Your functions should perform as specified.
+                </li>
+                <li>
+                    <b>Formatting style:</b> Make sure that you follow the PEP-8 Python style guidelines, and the general programming rules that we have introduced throughout the term.
+                </li>
+                <li>
+                    <b>Programming style:</b> Your variable names should be meaningful and your code as simple and clear as possible.
+                </li>
+                <li>
+                    <b>No magic numbers:</b>: remember this from Assignment 1? You should define constants and use them instead of magic numbers.
+                </li>
+                <li>
+                    <b>Commenting</b>: be sure to include accurate docstrings (that follow the design recipe we have been using) and include internal comments.
+                </li>
+                <li>
+                    <b>Design</b>: We expect a reasonable choice of functions/methods. Functions/methods should generally be short -- no longer than about 20-30 lines of code. Write helper functions/methods to meet this goal.
+                </li>
+            </ul>
+            <h2>
+                What to Submit
+            </h2>
+            <p>
+                <span style="color:red"><strong>The very last thing you should do before submitting is to run the type-check module one last time.</strong></span> Otherwise, you could make a small error in your final changes before submitting that causes your code to receive zero for correctness. Make sure that any <code>print</code> or <code>input</code> statements are hidden behind <code>if(__name__ == "__main__")</code>, or else the type-checker (and more importantly the auto-marker) will wait for input when it imports your file, and pause indefinitely.
+                
+            </p>
+            <p>
+                Submit <code>database.py</code>, <code>reading.py</code> and <code>squeal.py</code>. Your files must be named exactly as given here (i.e. no capital letters, and please don't change the filenames).
+            </p>
+        </div>
+    </body>
+</html>
